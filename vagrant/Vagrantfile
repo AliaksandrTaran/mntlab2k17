@@ -1,0 +1,88 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# All Vagrant configuration is done below. The "2" in Vagrant.configure
+# configures the configuration version (we support older styles for
+# backwards compatibility). Please don't change it unless you know what
+# you're doing.
+Vagrant.configure("2") do |config|
+############## MY CONFIG ####################################################
+	config.vm.box="sbeliakou/centos-7.4-x86_64-minimal"
+	
+	config.vm.define "web" do |web|
+		web.vm.hostname="web"
+		web.vm.network :private_network, ip: "192.168.56.101"
+		web.vm.provider :virtualbox do |m|
+			m.customize ["modifyvm", :id, "--memory", 2048]
+			m.customize ["modifyvm", :id, "--name", "webserver"]
+		
+		web.vm.provision "shell", path: "script.sh"
+		web.vm.provision "shell", inline: <<-EOF
+		cp -f /vagrant/nginx.conf /etc/nginx/nginx.conf
+		cp -f /vagrant/default.conf /etc/nginx/conf.d/default.conf
+		
+		EOF
+		web.vm.provision "shell", path: "startup.sh"
+		end
+				
+	end
+
+	config.vm.define "tomcat1" do |tomcat1|
+		tomcat1.vm.hostname="tomcat1"
+		tomcat1.vm.provision "shell", path: "tomcat.sh"
+		tomcat1.vm.network :private_network, ip: "192.168.56.102"
+		tomcat1.vm.provider :virtualbox do |x|
+			x.customize ["modifyvm", :id, "--memory", 1024]
+			x.customize ["modifyvm", :id, "--name", "tomcat1"]
+		end
+	end
+
+	config.vm.define "tomcat2" do |tomcat2|
+		tomcat2.vm.hostname="tomcat2"
+		tomcat2.vm.provision "shell", path: "tomcat.sh"
+		tomcat2.vm.network :private_network, ip: "192.168.56.103"
+		tomcat2.vm.provider :virtualbox do |y|
+			y.customize ["modifyvm", :id, "--memory", 1024]
+			y.customize ["modifyvm", :id, "--name", "tomcat2"]
+		end
+	end		
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  # Provider-specific configuration so you can fine-tune various
+  # backing providers for Vagrant. These expose provider-specific options.
+  # Example for VirtualBox:
+  #
+  # config.vm.provider "virtualbox" do |vb|
+  #   # Display the VirtualBox GUI when booting the machine
+  #   vb.gui = true
+  #
+  #   # Customize the amount of memory on the VM:
+  #   vb.memory = "1024"
+  # end
+  #
+  # View the documentation for the provider you are using for more
+  # information on available options.
+
+  # Enable provisioning with a shell script. Additional provisioners such as
+  # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
+  # documentation for more information about their specific syntax and use.
+  # config.vm.provision "shell", inline: <<-SHELL
+  #   apt-get update
+  #   apt-get install -y apache2
+  # SHELL
+end
